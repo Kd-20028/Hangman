@@ -1,32 +1,50 @@
 class Game
-  attr_accessor :display, :player, :current_guess
+  attr_accessor :display, :player, :current_guess, :incorrect_guesses
   @@tries = 0
+
   def initialize
     @display = Display.new()
     @player = Player.new()
     @current_guess = ""
+    @incorrect_guesses = ""
   end
 
   def start_game
     word = File.readlines("wordbank.txt").sample.to_s.delete("\n")
-    puts word
     puts display.display_blanks(word)
+    puts ""
     self.current_guess = display.display_current_status(word)
     while @@tries < 10
       guess = player.get_letter_guess
       check_guess(word, guess, self.current_guess)
+        if self.current_guess == word
+          puts "GAME OVER! YOU WIN!"
+          break
+        end
+    end
+
+    if @@tries == 10
+      puts "GAME OVER! YOU LOSE!"
     end
   end
 
   def check_guess(word, guess, current_guess)
+    found_match = false
     word.each_char.with_index do |char, i|
       if guess == char
-        current_guess.sub!(current_guess[i], guess)
-      else
-        next
+        current_guess[i] = guess
+        found_match = true
       end
     end
+
+    unless found_match
+      self.incorrect_guesses += "#{guess},"
+      puts "Incorrect guesses: #{self.incorrect_guesses}\n"
+      @@tries += 1
+    end
+
     puts current_guess
+    puts " "
   end
 
 end
@@ -59,6 +77,11 @@ class Display
   end
 end
 
+class SaveGame
+  def initialize
+
+  end
+end
 
 game = Game.new()
 game.start_game
